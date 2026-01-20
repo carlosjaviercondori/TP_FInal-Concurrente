@@ -26,4 +26,17 @@ public class Monitor implements MonitorInterface {
         }
         return true;
     }
+
+    // Nuevo método para verificar si una transición está habilitada
+    public synchronized boolean isEnabled(int transitionId) {
+        Transition transition = petriNet.getTransition(transitionId);
+        if (transition == null) return false;
+        for (int placeId : transition.getInputPlaces()) {
+            Place place = petriNet.getPlace(placeId);
+            if (place.getTokens() == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

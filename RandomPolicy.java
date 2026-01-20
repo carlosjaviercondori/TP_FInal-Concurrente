@@ -1,5 +1,8 @@
 import java.util.Random;
-
+/**
+ * A policy that selects a transition to fire at random from the 
+ * set of enabled transitions.
+ */
 public class RandomPolicy extends Policy {
     private final Random random = new Random();
 
