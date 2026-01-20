@@ -1,8 +1,18 @@
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Date;
+
 public class Monitor implements MonitorInterface {
     private final PetriNet petriNet;
+    private FileWriter logWriter;
 
     public Monitor(PetriNet petriNet) {
         this.petriNet = petriNet;
+        try {
+            logWriter = new FileWriter("petri_log.txt", true); // Modo append
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -24,7 +34,25 @@ public class Monitor implements MonitorInterface {
         for (int placeId : transition.getOutputPlaces()) {
             petriNet.getPlace(placeId).addToken();
         }
+        // Registrar en el log
+        logTransition(transitionId);
         return true;
+    }
+
+    private void logTransition(int transitionId) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append(new Date()).append(" | Hilo: ").append(Thread.currentThread().getName());
+            sb.append(" | T").append(transitionId).append(" disparada | Estado plazas: ");
+            for (Place place : petriNet.getPlaces().values()) {
+                sb.append("P").append(place.getId()).append(":").append(place.getTokens()).append(" ");
+            }
+            sb.append("\n");
+            logWriter.write(sb.toString());
+            logWriter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // Nuevo método para verificar si una transición está habilitada

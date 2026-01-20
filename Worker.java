@@ -33,12 +33,34 @@ public class Worker implements Runnable {
                 boolean fired = monitor.fireTransition(seleccionada);
                 if (fired) {
                     disparosRealizados++;
-                    // Puedes agregar aquí un pequeño sleep si quieres simular tiempo de procesamiento
+                    // Si la transición es temporal, aplicar sleep
+                    if (isTemporalTransition(seleccionada)) {
+                        try { Thread.sleep(getTransitionTime(seleccionada)); } catch (InterruptedException e) { break; }
+                    }
                 }
             } else {
                 // Si no hay transiciones habilitadas, el hilo puede dormir un poco para evitar busy-wait
                 try { Thread.sleep(1); } catch (InterruptedException e) { break; }
             }
+        }
+    }
+
+    // IDs de transiciones temporales
+    private boolean isTemporalTransition(int transitionId) {
+        return transitionId == 1 || transitionId == 3 || transitionId == 4 || transitionId == 6 || transitionId == 8 || transitionId == 9 || transitionId == 10;
+    }
+
+    // Asigna tiempo a cada transición temporal (puedes ajustar los valores)
+    private int getTransitionTime(int transitionId) {
+        switch (transitionId) {
+            case 1: return 100; // T1
+            case 3: return 120; // T3
+            case 4: return 150; // T4
+            case 6: return 110; // T6
+            case 8: return 130; // T8
+            case 9: return 140; // T9
+            case 10: return 160; // T10
+            default: return 0;
         }
     }
 }
