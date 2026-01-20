@@ -1,11 +1,15 @@
 import java.util.*;
-
+/**
+ * Utility class to initialize a Petri net with predefined places and transitions.
+ * This class provides a method to create and return a PetriNet instance
+ * configured with specific places and transitions.
+ */
 public class PetriNetInitializer {
     public static PetriNet createPetriNet() {
         // Crear plazas (Place)
         Map<Integer, Place> places = new HashMap<>();
         // Ejemplo: P0 con 1 token, el resto con 0 (ajusta según la red real)
-        places.put(0, new Place(0, 1)); // P0
+        places.put(0, new Place(0, 3)); // P0
         places.put(1, new Place(1, 0)); // P1
         places.put(2, new Place(2, 0)); // P2
         places.put(3, new Place(3, 0)); // P3
