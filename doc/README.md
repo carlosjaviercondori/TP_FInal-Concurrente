@@ -424,15 +424,33 @@ javac *.java
 ### Ejecución
 
 ```bash
-java PetriNetInitializer
+java Main
+```
+### Configuracion en Main.java
+
+
+```java
+// Choose policy (RandomPolicy or PrioritizedPolicy)
+Policy policy = new RandomPolicy();              // Random selection
+// Policy policy = new PrioritizedPolicy(7);    // Prioritized selection
+
+int numHilos = 3;              // Number of worker threads
+int disparosPorHilo = 200;     // Firings per thread
 ```
 
 ### Salida
 
 ```
-Simulando 10 disparos con 3 workers...
-Petri_log.txt: Registro de todos los eventos
-Estado final: P1=2, P2=3, P3=5
+Initial state of places:
+P1: 5 tokens
+P2: 0 tokens
+P3: 0 tokens
+
+Concurrent simulation completed.
+Final state of places:
+P1: 0 tokens
+P2: 3 tokens
+P3: 2 tokens
 ```
 
 ---
