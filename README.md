@@ -4,7 +4,6 @@
 
 This project implements a **Petri Net simulator** using Java with concurrent programming. The objective is to simulate the behavior of concurrent systems by triggering transitions in a Petri net, using multiple threads (workers) and a synchronized monitor.
 
-
 ---
 
 ## Table of Contents
@@ -14,7 +13,8 @@ This project implements a **Petri Net simulator** using Java with concurrent pro
 3. [Project Architecture](#project-architecture)
 4. [Main Components](#main-components)
 5. [Diagrams](#diagrams)
-6. [Execution](#execution)
+6. [Design Patterns](#design-patterns)
+7. [Execution](#execution)
 
 ---
 
@@ -63,43 +63,39 @@ When it triggers:
 
 ```
 Petri/
-├── Place.java # Storage nodes (places)
-├── Transition.java # Actions (transitions)
-├── PetriNet.java # Main network structure
-├── Monitor.java # Synchronized trigger control
-├── MonitorInterface.java # Monitor interface
-├── Policy.java # Abstract class for policies
-├── RandomPolicy.java # Random selection
-├── PrioritizedPolicy.java # Prioritized selection
-├── Worker.java # Thread that executes triggers
-├── PetriNetInitializer.java # Main initializer
-├── VerificarInvariante.java # Invariant verification
-└── README.md # This file
+├── Place.java                   # Storage nodes (places)
+├── Transition.java              # Actions (transitions)
+├── PetriNet.java                # Main network structure
+├── Monitor.java                 # Synchronized trigger control
+├── MonitorInterface.java        # Monitor interface
+├── Policy.java                  # Abstract class for policies
+├── RandomPolicy.java            # Random selection
+├── PrioritizedPolicy.java       # Prioritized selection
+├── Worker.java                  # Thread that executes triggers
+├── PetriNetInitializer.java     # Main initializer
+├── VerificarInvariante.java     # Invariant verification
+└── README.md                    # This file
 ```
 
 ---
 
 ## Main Components
 
-### 1. **Place**
+### 1. **Place** - Storage Node
 
-Represents a storage node on the network.
+Represents a storage node on the network that holds tokens.
 
-``java
+```java
 public class Place {
+    private final int id;      // Unique identifier
+    private int tokens;        // Number of tokens
 
-private final int id; // Unique identifier
-
-private int tokens; // Number of tokens
-
-/ Main methods
-
-public int getTokens() // Get tokens
-
-public void addToken() // Add token
-
-public void removeToken() // Remove token
-
+    public Place(int id, int tokens)
+    public int getId()
+    public int getTokens()
+    public void setTokens(int tokens)
+    public void addToken()     // Increment tokens
+    public void removeToken()  // Decrement tokens
 }
 ```
 
@@ -109,25 +105,21 @@ public void removeToken() // Remove token
 
 ---
 
-### 2. **Transition**
+### 2. **Transition** - Action Node
 
-Represents an action on the network.
+Represents an action that transfers tokens between places.
 
-``java
+```java
 public class Transition {
+    private final int id;                      // Unique identifier
+    private final List<Integer> inputPlaces;   // Input places
+    private final List<Integer> outputPlaces;  // Output places
 
-private final int id; // Unique identifier
-
-private final List<Integer> inputPlaces; // Input places
-
-private final List<Integer> outputPlaces; // Output Places
-
-// Main Methods
-
-public List<Integer> getInputPlaces()
-
-public List<Integer> getOutputPlaces()
-
+    public Transition(int id, List<Integer> inputPlaces, 
+                      List<Integer> outputPlaces)
+    public int getId()
+    public List<Integer> getInputPlaces()
+    public List<Integer> getOutputPlaces()
 }
 ```
 
@@ -137,26 +129,21 @@ public List<Integer> getOutputPlaces()
 
 ---
 
-### 3. **PetriNet (Petri Net)**
+### 3. **PetriNet** - Network Container
 
 Main container that stores all places and transitions.
 
-``java
+```java
 public class PetriNet {
+    private final Map<Integer, Place> places;           // All places
+    private final Map<Integer, Transition> transitions; // All transitions
 
-private final Map<Integer, Place> places; // All places
-
-private final Map<Integer, Transition> transitions; // All transitions
-
-// Main methods
-
-public Place getPlace(int id)
-
-public Transition getTransition(int id)
-
-public Map<Integer, Place> getPlaces()
-
-public Map<Integer, Transition> getTransitions()
+    public PetriNet(Map<Integer, Place> places, 
+                    Map<Integer, Transition> transitions)
+    public Place getPlace(int id)
+    public Transition getTransition(int id)
+    public Map<Integer, Place> getPlaces()
+    public Map<Integer, Transition> getTransitions()
 }
 ```
 
@@ -166,64 +153,53 @@ public Map<Integer, Transition> getTransitions()
 
 ---
 
-### 4. **MonitorInterface**
+### 4. **MonitorInterface** - Synchronization Contract
 
-Interface that defines the synchronization contract.
+Interface that defines the synchronization contract for the monitor.
 
-``java
-
+```java
 public interface MonitorInterface {
-boolean fireTransition(int transitionId); // Trigger a transition
-boolean isEnabled(int transitionId); // Check if it is enabled
+    boolean fireTransition(int transitionId);  // Trigger a transition
+    boolean isEnabled(int transitionId);       // Check if enabled
 }
 ```
 
 ---
-### 5. **Monitor (Synchronized Monitor)**
+### 5. **Monitor** - Synchronized Control
 
-Implements the synchronized logic for triggering transitions. It is the **synchronization point** between workers.
+Implements the synchronized logic for triggering transitions. This is the **synchronization point** between workers.
 
-``java
+```java
 public class Monitor implements MonitorInterface {
+    private final PetriNet petriNet;
+    private FileWriter logWriter;
 
-private final PetriNet petriNet;
-
-private FileWriter logWriter;
-
-// Synchronized methods
-
-public synchronized boolean fireTransition(int transitionId) {
-// 1. Check if the transition is enabled
-
-for (int placeId : transition.getInputPlaces()) {
-
-Place place = petriNet.getPlace(placeId);
-
-if (place.getTokens() == 0)
-
-return false; // Not enabled 
-} 
-
-// 2. Remove input tokens 
-for (int placeId : transition.getInputPlaces()) { 
-petriNet.getPlace(placeId).removeToken(); 
-} 
-
-// 3. Add output tokens 
-for (int placeId : transition.getOutputPlaces()) { 
-petriNet.getPlace(placeId).addToken(); 
-} 
-
-// 4. Record in log 
-logTransition(transitionId); 
-return true; 
-}
-
-public synchronized boolean isEnabled(int transitionId) {
-
-/ Check if all entry points have tokens
-
-}
+    public Monitor(PetriNet petriNet)
+    
+    public synchronized boolean fireTransition(int transitionId) {
+        // 1. Check if the transition is enabled
+        for (int placeId : transition.getInputPlaces()) {
+            Place place = petriNet.getPlace(placeId);
+            if (place.getTokens() == 0) return false;
+        }
+        
+        // 2. Remove input tokens
+        for (int placeId : transition.getInputPlaces()) {
+            petriNet.getPlace(placeId).removeToken();
+        }
+        
+        // 3. Add output tokens
+        for (int placeId : transition.getOutputPlaces()) {
+            petriNet.getPlace(placeId).addToken();
+        }
+        
+        // 4. Record in log
+        logTransition(transitionId);
+        return true;
+    }
+    
+    public synchronized boolean isEnabled(int transitionId)
+    private void logTransition(int transitionId)
 }
 ```
 
@@ -235,15 +211,13 @@ public synchronized boolean isEnabled(int transitionId) {
 
 ---
 
-### 6. **Policy (Selection Strategy)**
+### 6. **Policy** - Selection Strategy
 
-An abstract class that implements the **Strategy** pattern for selecting transitions.
+Abstract class that implements the **Strategy** pattern for selecting transitions.
 
-``java
+```java
 public abstract class Policy {
-
-public abstract int selectTransition(int[] enabledTransitions);
-
+    public abstract int selectTransition(int[] enabledTransitions);
 }
 ```
 
@@ -253,107 +227,89 @@ public abstract int selectTransition(int[] enabledTransitions);
 
 ---
 
-### 7. **RandomPolicy**
+### 7. **RandomPolicy** - Random Selection
 
 Selects a transition **randomly** from those available.
 
-``java
+```java
 public class RandomPolicy extends Policy {
-private final Random random = new Random();
+    private final Random random = new Random();
 
-@Override
-public int selectTransition(int[] enabledTransitions) {
-if (enabledTransitions.length == 0) return -1;
-return enabledTransitions[random.nextInt(enabledTransitions.length)];
-
-}
+    @Override
+    public int selectTransition(int[] enabledTransitions) {
+        if (enabledTransitions.length == 0) return -1;
+        return enabledTransitions[random.nextInt(enabledTransitions.length)];
+    }
 }
 ```
 
 ---
 
-### 8. **PrioritizedPolicy**
+### 8. **PrioritizedPolicy** - Priority-Based Selection
 
-Prioritizes a specific transition if it is enabled; otherwise, it selects the first available one.
+Prioritizes a specific transition if it is enabled; otherwise selects the first available.
 
 ```java
 public class PrioritizedPolicy extends Policy {
+    private final int priorityTransitionId;
 
-private final int priorityTransitionId;
+    public PrioritizedPolicy(int priorityTransitionId)
 
-@Override
-
-public int selectTransition(int[] enabledTransitions) {
-
-/ Find the priority transition
-for (int t : enabledTransitions) {
-
-if (t == priorityTransitionId)
-
-return t; // Priority found
-
-}
-// If not found, return the first available one
-return enabledTransitions.length > 0 ? enabledTransitions[0] : -1;
-
-}
+    @Override
+    public int selectTransition(int[] enabledTransitions) {
+        // Find the priority transition
+        for (int t : enabledTransitions) {
+            if (t == priorityTransitionId) return t;
+        }
+        // If not found, return the first available
+        return enabledTransitions.length > 0 ? enabledTransitions[0] : -1;
+    }
 }
 ```
 
 ---
 
-### 9. **Worker (Thread Executor)**
+### 9. **Worker** - Thread Executor
 
 Class that implements `Runnable`. Each Worker executes transition triggers in its own thread.
 
-``java
+```java
 public class Worker implements Runnable {
+    private final Monitor monitor;             // Synchronized access
+    private final Policy policy;               // Selection strategy
+    private final int[] posiblesTransiciones;  // Allowed transitions
+    private final int disparosObjetivo;        // Target firings
+    private int disparosRealizados = 0;        // Current counter
 
-private final Monitor monitor; // Synchronized access
+    public Worker(Monitor monitor, Policy policy, 
+                  int[] transiciones, int disparos)
 
-private final Policy policy; // Selection Strategy
+    @Override
+    public void run() {
+        while (disparosRealizados < disparosObjetivo) {
+            // 1. Find enabled transitions
+            List<Integer> habilitadas = new ArrayList<>();
+            for (int t : posiblesTransiciones) {
+                if (monitor.isEnabled(t)) {
+                    habilitadas.add(t);
+                }
+            }
 
-private final int[] possibleTransitions; // Allowed Transitions
+            // 2. If transitions are available
+            if (!habilitadas.isEmpty()) {
+                int[] arr = habilitadas.stream()
+                    .mapToInt(Integer::intValue).toArray();
 
-private final int targetShots; // Target Shots
+                // 3. Use policy to select
+                int transitionSeleccionada = policy.selectTransition(arr);
 
-private int shotsTaken = 0; // Current Counter
-
-@Override
-
-public void run() {
-
-while (shotsTaken < targetShots) {
-// 1. Check for enabled transitions
-
-List<Integer> enabled = new ArrayList<>();
-
-for (int t : possibleTransitions) {
-
-if (monitor.isEnabled(t)) {
-enabled.add(t);
-
-}
-}
-
-// 2. Check if transitions are available
-
-if (!enabled.isEmpty()) {
-int[] arr = enabled.stream().mapToInt(Integer::intValue).toArray();
-
-// 3. Use policy to select
-
-int selectedTransition = policy.selectTransition(arr);
-
-// 4. Attempt to fire
-
-if (monitor.fireTransition(selectedTransition)) {
-fireTransitionsFired++;
-
-}
-}
-}
-}
+                // 4. Attempt to fire
+                if (monitor.fireTransition(transitionSeleccionada)) {
+                    disparosRealizados++;
+                }
+            }
+        }
+    }
 }
 ```
 
@@ -364,56 +320,52 @@ fireTransitionsFired++;
 - Update the firing counter
 - Synchronize with Monitor
 
----
-### 10. **PetriNetInitializer**
+### 10. **PetriNetInitializer** - Main Entry Point
 
 Main class that initializes and runs the simulation.
 
-``java
+```java
 public class PetriNetInitializer {
-public static void main(String[] args) {
-// 1. Create places
-Place p1 = new Place(1, 1); // Place 1 with 1 token
-Place p2 = new Place(2, 0);
+    public static void main(String[] args) {
+        // 1. Create places
+        Place p1 = new Place(1, 1);  // Place 1 with 1 token
+        Place p2 = new Place(2, 0);
+        Place p3 = new Place(3, 0);
 
-Place p3 = new Place(3, 0);
+        // 2. Create transitions
+        Transition t1 = new Transition(1,
+            Arrays.asList(1),   // Input: P1
+            Arrays.asList(2)    // Output: P2
+        );
 
-// 2. Create transitions
-Transition t1 = new Transition(1,
+        // 3. Create the network
+        Map<Integer, Place> places = new HashMap<>();
+        places.put(1, p1);
+        places.put(2, p2);
+        places.put(3, p3);
 
-Arrays.asList(1), // Input: P1
+        Map<Integer, Transition> transitions = new HashMap<>();
+        transitions.put(1, t1);
 
-Arrays.asList(2) // Output: P2
+        PetriNet petriNet = new PetriNet(places, transitions);
 
-);
+        // 4. Create monitor
+        Monitor monitor = new Monitor(petriNet);
 
-// 3. Create the network
-Map<Integer, Place> places = new HashMap<>();
-places.put(1, p1); places.put(2, p2); places.put(3, p3); 
+        // 5. Create workers with policies
+        Policy randomPolicy = new RandomPolicy();
+        Worker worker1 = new Worker(monitor, randomPolicy,
+            new int[]{1, 2}, 5);  // Target firings: 5
 
-Map<Integer, Transition> transitions = new HashMap<>(); 
-transitions.put(1, t1); 
+        // 6. Run in threads
+        Thread t = new Thread(worker1);
+        t.start();
+        t.join();  // Wait for completion
 
-PetriNet petriNet = new PetriNet(places, transitions); 
-
-// 4. Create monitor 
-Monitor monitor = new Monitor(petriNet); 
-
-// 5. Create workers with policies 
-Policy randomPolicy = new RandomPolicy(); 
-Worker worker1 = new Worker(monitor, randomPolicy, 
-new int[]{1, 2}, 5); // Target shots: 5 
-
-// 6. Run in threads 
-Thread t = new Thread(worker1); 
-t.start(); 
-t.join(); // Wait for it to finish 
-
-// 7. Check result 
-System.out.println("Final state: P1=" + p1.getTokens() + 
-", P2=" + p2.getTokens());
-
-}
+        // 7. Display final state
+        System.out.println("Final state: P1=" + p1.getTokens() +
+            ", P2=" + p2.getTokens());
+    }
 }
 ```
 
@@ -440,39 +392,37 @@ System.out.println("Final state: P1=" + p1.getTokens() +
 
 **Execution Flow:**
 
-1. **Initialization:** PetriNetInitializer creates PetriNet, Monitor, and Workers
-
-2. **Search:** Worker searches for enabled transitions (isEnabled)
-
-3. **Selection:** Policy selects a transition from the enabled set
-
-4. **Synchronized Firing:** Monitor synchronizes the fireTransition
-
-5. **Update:** Input tokens are removed, output tokens are added
-
-6. **Logging:** The event is logged
-
-7. **Repetition:** The cycle continues until target firings are reached
+1. **Initialization**: PetriNetInitializer creates PetriNet, Monitor, and Workers
+2. **Search**: Worker searches for enabled transitions via `isEnabled()`
+3. **Selection**: Policy selects a transition from the enabled set
+4. **Synchronized Firing**: Monitor synchronizes the `fireTransition()` call
+5. **Update**: Input tokens are removed, output tokens are added
+6. **Logging**: The event is logged to `petri_log.txt`
+7. **Repetition**: Cycle continues until target firings reached
 
 ---
 
 ## Design Patterns
 
 ### 1. **Strategy Pattern**
-- **Location:** Policy, RandomPolicy, PrioritizedPolicy
-- **Benefit:** Allows changing the selection algorithm without modifying the Worker
+- **Location**: Policy, RandomPolicy, PrioritizedPolicy
+- **Benefit**: Allows changing the selection algorithm without modifying Worker
+- **Use Case**: Easy to implement different firing strategies
 
 ### 2. **Monitor Pattern**
-- **Location:** Monitor class with synchronized methods
-- **Benefit:** Synchronizes access to shared resources (PetriNet)
+- **Location**: Monitor class with `synchronized` methods
+- **Benefit**: Synchronizes access to shared resources (PetriNet)
+- **Use Case**: Prevents race conditions in concurrent access
 
 ### 3. **Dependency Injection**
-- **Location:** Worker receives Monitor and Policy in constructor
-- **Benefit:** Facilitates testing and flexibility
+- **Location**: Worker receives Monitor and Policy in constructor
+- **Benefit**: Facilitates testing and flexibility
+- **Use Case**: Decouples components and improves maintainability
 
-### 4. **Template Method (implicit)**
-- **Location:** Run() method in Worker follows a repetitive pattern
-- **Benefit:** Clear and predictable structure
+### 4. **Template Method**
+- **Location**: `run()` method in Worker follows a fixed pattern
+- **Benefit**: Clear and predictable structure
+- **Use Case**: Standardizes the execution flow across workers
 
 ---
 
@@ -503,19 +453,21 @@ Final state: P1=2, P2=3, P3=5
 
 ## Verification of Invariants
 
-The `VerifyInvariant.java` class verifies that the network invariants are maintained:
+The `VerificarInvariante.java` class verifies that network invariants are maintained throughout execution:
 
 ```java
-public class VerifyInvariant {
-public static void main(String[] args) {
-// Read petri_log.txt
-// Rebuild state for each event
-// Verify that the token sum is invariant
-
-}
+public class VerificarInvariante {
+    public static void main(String[] args) {
+        // Read petri_log.txt
+        // Reconstruct state for each event
+        // Verify that the sum of tokens remains constant
+    }
 }
 ```
 
 ---
 
 ## Conclusion
+
+
+---
