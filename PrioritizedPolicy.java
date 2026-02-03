@@ -1,3 +1,7 @@
+/** A policy that prioritizes a specific transition if it is enabled. 
+ * If the prioritized transition is not enabled, 
+ * it selects the first available transition.
+ */
 public class PrioritizedPolicy extends Policy {
     private final int simpleTransitionId;
 
