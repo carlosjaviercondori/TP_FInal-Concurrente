@@ -25,28 +25,28 @@ public class Place {
      * Get the number of tokens in the place.
      * @return
      */
-    public int getTokens() {
+    public synchronized int getTokens() {
         return tokens;
     }
     /**
      * Set the number of tokens in the place.
      * @param tokens
      */
-    public void setTokens(int tokens) {
+    public synchronized void setTokens(int tokens) {
         this.tokens = tokens;
     }
 
     /**
      * Add a token to the place.
      */
-    public void addToken() {
+    public synchronized void addToken() {
         tokens++;
     }
 
     /**
      * Remove a token from the place if available.
      */
-    public void removeToken() {
+    public synchronized void removeToken() {
         if (tokens > 0) tokens--;
     }
     
