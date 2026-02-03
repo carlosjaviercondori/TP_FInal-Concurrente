@@ -320,15 +320,15 @@ public class Worker implements Runnable {
 - Update the firing counter
 - Synchronize with Monitor
 
-### 10. **PetriNetInitializer** - Main Entry Point
+### 10. **PetriNetInitializer** - Network Factory
 
-Main class that initializes and runs the simulation.
+Factory class that creates and initializes the Petri Net structure.
 
 ```java
 public class PetriNetInitializer {
-    public static void main(String[] args) {
+    public static PetriNet createPetriNet() {
         // 1. Create places
-        Place p1 = new Place(1, 1);  // Place 1 with 1 token
+        Place p1 = new Place(1, 5);   // Initial tokens
         Place p2 = new Place(2, 0);
         Place p3 = new Place(3, 0);
 
@@ -338,7 +338,7 @@ public class PetriNetInitializer {
             Arrays.asList(2)    // Output: P2
         );
 
-        // 3. Create the network
+        // 3. Build the network
         Map<Integer, Place> places = new HashMap<>();
         places.put(1, p1);
         places.put(2, p2);
@@ -347,27 +347,16 @@ public class PetriNetInitializer {
         Map<Integer, Transition> transitions = new HashMap<>();
         transitions.put(1, t1);
 
-        PetriNet petriNet = new PetriNet(places, transitions);
-
-        // 4. Create monitor
-        Monitor monitor = new Monitor(petriNet);
-
-        // 5. Create workers with policies
-        Policy randomPolicy = new RandomPolicy();
-        Worker worker1 = new Worker(monitor, randomPolicy,
-            new int[]{1, 2}, 5);  // Target firings: 5
-
-        // 6. Run in threads
-        Thread t = new Thread(worker1);
-        t.start();
-        t.join();  // Wait for completion
-
-        // 7. Display final state
-        System.out.println("Final state: P1=" + p1.getTokens() +
-            ", P2=" + p2.getTokens());
+        return new PetriNet(places, transitions);
     }
 }
 ```
+
+**Responsibilities:**
+- Create and configure the Petri Net
+- Initialize places with tokens
+- Define transitions and their connections
+- Centralize network configuration
 
 ---
 
@@ -375,7 +364,7 @@ public class PetriNetInitializer {
 
 ### Class Diagram
 
-![Class Diagram](doc/class.png)
+![Class Diagram](../pruebas/class.png)
 
 **Main Relationships:**
 - `Worker` implements `Runnable` (concurrent pattern)
@@ -437,17 +426,41 @@ javac *.java
 
 ### Execution
 
+The simulation runs from the **Main** class:
+
 ```bash
-java PetriNetInitializer
+java Main
 ```
 
-### Output
+### Configuration in Main.java
+
+You can adjust the simulation parameters:
+
+```java
+// Choose policy (RandomPolicy or PrioritizedPolicy)
+Policy policy = new RandomPolicy();              // Random selection
+// Policy policy = new PrioritizedPolicy(7);    // Prioritized selection
+
+int numHilos = 3;              // Number of worker threads
+int disparosPorHilo = 200;     // Firings per thread
+```
+
+### Sample Output
 
 ```
-Simulating 10 firings with 3 workers...
-Petri_log.txt: Log of all events
-Final state: P1=2, P2=3, P3=5
+Initial state of places:
+P1: 5 tokens
+P2: 0 tokens
+P3: 0 tokens
+
+Concurrent simulation completed.
+Final state of places:
+P1: 0 tokens
+P2: 3 tokens
+P3: 2 tokens
 ```
+
+The complete execution log is saved to **petri_log.txt** with timestamps and all firing events.
 
 ---
 
