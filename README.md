@@ -364,7 +364,7 @@ public class PetriNetInitializer {
 
 ### Class Diagram
 
-![Class Diagram](../pruebas/class.png)
+![Class Diagram](doc/class.png)
 
 **Main Relationships:**
 - `Worker` implements `Runnable` (concurrent pattern)

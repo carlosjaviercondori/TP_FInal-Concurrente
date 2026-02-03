@@ -15,7 +15,7 @@ public class VerificarInvariante {
                     int p1 = Integer.parseInt(matcher.group(2));
                     int p2 = Integer.parseInt(matcher.group(3));
                     if (p0 + p1 + p2 != 3) {
-                        System.out.println("Invariante violado en línea: " + line.trim());
+                        System.out.println("Invariant violated in line: " + line.trim());
                         invarianteOk = false;
                     }
                 }
@@ -24,9 +24,9 @@ public class VerificarInvariante {
             e.printStackTrace();
         }
         if (invarianteOk) {
-            System.out.println("¡El invariante de plaza se cumple en todo el log!");
+            System.out.println("Place invariant is satisfied throughout the log!");
         } else {
-            System.out.println("Hubo violaciones del invariante.");
+            System.out.println("There were invariant violations.");
         }
     }
 }

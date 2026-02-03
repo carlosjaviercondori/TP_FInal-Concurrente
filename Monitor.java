@@ -9,7 +9,7 @@ public class Monitor implements MonitorInterface {
     public Monitor(PetriNet petriNet) {
         this.petriNet = petriNet;
         try {
-            logWriter = new FileWriter("petri_log.txt", true); // Modo append
+            logWriter = new FileWriter("petri_log.txt", true); // Append mode
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -19,22 +19,22 @@ public class Monitor implements MonitorInterface {
     public synchronized boolean fireTransition(int transitionId) {
         Transition transition = petriNet.getTransition(transitionId);
         if (transition == null) return false;
-        // Verificar si la transición está habilitada
+        // Check if the transition is enabled
         for (int placeId : transition.getInputPlaces()) {
             Place place = petriNet.getPlace(placeId);
             if (place.getTokens() == 0) {
-                return false; // No habilitada
+                return false; // Not enabled
             }
         }
-        // Disparar la transición: quitar tokens de entrada
+        // Fire the transition: remove input tokens
         for (int placeId : transition.getInputPlaces()) {
             petriNet.getPlace(placeId).removeToken();
         }
-        // Agregar tokens a las plazas de salida
+        // Add tokens to output places
         for (int placeId : transition.getOutputPlaces()) {
             petriNet.getPlace(placeId).addToken();
         }
-        // Registrar en el log
+        // Log the event
         logTransition(transitionId);
         return true;
     }
@@ -42,8 +42,8 @@ public class Monitor implements MonitorInterface {
     private void logTransition(int transitionId) {
         try {
             StringBuilder sb = new StringBuilder();
-            sb.append(new Date()).append(" | Hilo: ").append(Thread.currentThread().getName());
-            sb.append(" | T").append(transitionId).append(" disparada | Estado plazas: ");
+            sb.append(new Date()).append(" | Thread: ").append(Thread.currentThread().getName());
+            sb.append(" | T").append(transitionId).append(" fired | Places state: ");
             for (Place place : petriNet.getPlaces().values()) {
                 sb.append("P").append(place.getId()).append(":").append(place.getTokens()).append(" ");
             }
@@ -55,7 +55,7 @@ public class Monitor implements MonitorInterface {
         }
     }
 
-    // Nuevo método para verificar si una transición está habilitada
+    // New method to check if a transition is enabled
     public synchronized boolean isEnabled(int transitionId) {
         Transition transition = petriNet.getTransition(transitionId);
         if (transition == null) return false;

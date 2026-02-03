@@ -20,7 +20,7 @@ public class Worker implements Runnable {
     @Override
     public void run() {
         while (disparosRealizados < disparosObjetivo) {
-            // Buscar transiciones habilitadas
+            // Search for enabled transitions
             java.util.List<Integer> habilitadas = new java.util.ArrayList<>();
             for (int t : posiblesTransiciones) {
                 if (monitor.isEnabled(t)) {
@@ -33,24 +33,24 @@ public class Worker implements Runnable {
                 boolean fired = monitor.fireTransition(seleccionada);
                 if (fired) {
                     disparosRealizados++;
-                    // Si la transición es temporal, aplicar sleep
+                    // If the transition is temporal, apply sleep
                     if (isTemporalTransition(seleccionada)) {
                         try { Thread.sleep(getTransitionTime(seleccionada)); } catch (InterruptedException e) { break; }
                     }
                 }
             } else {
-                // Si no hay transiciones habilitadas, el hilo puede dormir un poco para evitar busy-wait
+                // If no transitions are enabled, sleep a bit to avoid busy-wait
                 try { Thread.sleep(1); } catch (InterruptedException e) { break; }
             }
         }
     }
 
-    // IDs de transiciones temporales
+    // IDs of temporal transitions
     private boolean isTemporalTransition(int transitionId) {
         return transitionId == 1 || transitionId == 3 || transitionId == 4 || transitionId == 6 || transitionId == 8 || transitionId == 9 || transitionId == 10;
     }
 
-    // Asigna tiempo a cada transición temporal (puedes ajustar los valores)
+    // Assigns time to each temporal transition (you can adjust the values)
     private int getTransitionTime(int transitionId) {
         switch (transitionId) {
             case 1: return 100; // T1

@@ -16,7 +16,7 @@ public class PrioritizedPolicy extends Policy {
                 return t; // Prioriza el modo simple
             }
         }
-        // Si no está habilitado el modo simple, elige el primero disponible
+        // If the simple mode is not enabled, choose the first available
         return enabledTransitions.length > 0 ? enabledTransitions[0] : -1;
     }
 }
