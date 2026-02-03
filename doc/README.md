@@ -365,7 +365,7 @@ public class PetriNetInitializer {
 
 ### Diagrama de Clases
 
-![Diagrama de Clases](../../pruebas/class.png)
+![Diagrama de Clases](class.png)
 
 **Relaciones principales:**
 - `Worker` implementa `Runnable` (patrón concurrente)
@@ -378,7 +378,7 @@ public class PetriNetInitializer {
 
 ### Diagrama de Secuencia
 
-![Diagrama de Secuencia](../../pruebas/sec.png)
+![Diagrama de Secuencia](sec.png)
 
 **Flujo de ejecución:**
 
